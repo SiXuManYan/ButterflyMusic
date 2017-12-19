@@ -1,0 +1,177 @@
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+apply plugin: 'me.tatarka.retrolambda'
+def AAVersion = '4.4.0'
+
+def releaseTime() {
+    return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
+}
+
+android {
+
+    compileSdkVersion 25
+    buildToolsVersion '26.0.2'
+
+    dexOptions {
+        javaMaxHeapSize "2g"   //这个改大
+    }
+
+
+    defaultConfig {
+
+        applicationId "com.shanshan.butterflymusic"
+
+        minSdkVersion 19
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        // Enabling multidex support.
+        // 1. 65535 limited
+        // 2. run -- error ：Java.exe finished with non-zero exit value 2
+        multiDexEnabled true
+
+        ndk {
+            abiFilters "arm64-v8a", "armeabi", "armeabi-v7a", "mips", "mips64", "x86", "x86_64"
+        }
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                //这里修改apk文件名
+//                def fileName = "Butterfly${defaultConfig.versionCode}_verN${defaultConfig.versionName}_${releaseTime()}.apk"
+                def fileName = "Beta_Butterfly${defaultConfig.versionCode}_verN${defaultConfig.versionName}_${releaseTime()}.apk"
+                output.outputFile = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        encoding "UTF-8"
+    }
+
+    signingConfigs {
+        debug { storeFile file("F:\\AsProject\\YiHuaMaster\\YHApp\\keystore\\debug.keystore") }
+    }
+
+    // 国际化报错
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+        disable 'MissingTranslation'
+    }
+
+}
+
+apt {
+    arguments {
+        androidManifestFile variant.outputs[0]?.processResources?.manifestFile
+        // if you have multiple outputs (when using splits), you may want to have other index than 0
+
+        // you should set your package name here if you are using different application IDs resourcePackageName "com.jz.yihua.activity"
+
+        // You can set optional annotation processing options here, like these commented options:
+        // logLevel 'INFO'
+        // logFile '/var/log/aa.log'
+    }
+}
+
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    //noinspection GradleCompatible
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:design:25.4.0'
+
+    // ####################### 框架 #######################################
+    apt "org.androidannotations:androidannotations:$AAVersion"
+    compile "org.androidannotations:androidannotations-api:$AAVersion"
+    compile 'com.tbruyelle.rxpermissions:rxpermissions:0.7.0@aar'
+
+    // 权限处理
+    compile 'io.reactivex:rxjava:1.1.5'
+    compile 'io.reactivex:rxandroid:1.2.0'
+
+    // rx线程关闭-保护rxjava
+    compile 'com.trello:rxlifecycle:0.3.0'
+    compile 'com.trello:rxlifecycle-components:0.3.0'
+
+    // #######################第三方API配置################################
+
+
+    // 微信
+    compile files('libs/wxpay/libammsdk.jar')
+
+    // 支付
+
+    /** 微信官方SDK:微信分享（分享小程序）登录、收藏、等功能  */
+    compile files('libs/wxselfshare/wechat-sdk-android-with-mta_5.0.8.jar')
+
+    // ShareSdk
+    compile files('libs/sharesdk/MobCommons-2016.1107.1809.jar')
+    compile files('libs/sharesdk/MobTools-2016.1107.1809.jar')
+    compile files('libs/sharesdk/ShareSDK-Core-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-QQ-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-QZone-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-SinaWeibo-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-Wechat-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-Wechat-Core-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-Wechat-Favorite-2.7.10.jar')
+    compile files('libs/sharesdk/ShareSDK-Wechat-Moments-2.7.10.jar')
+
+    // 高德
+    compile files('libs/gaode/AMap2DMap_2.9.2_AMapSearch_3.5.0_AMapLocation_3.1.0_20161027.jar')
+
+    // 二维码
+    compile files('libs/Zxing/core-3.3.0.jar')
+
+    // 音视频处理
+
+    //  compile 'com.github.wseemann:FFmp egMediaMetadataRetriever:1.0.14'
+
+    // ############################### Google #########################
+    compile 'com.android.support:cardview-v7:25.4.0'
+    compile 'com.android.support:design:25.4.0'
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.android.support:support-v4:25.4.0'
+
+    // ########################### 控件###############################
+    compile 'com.google.code.gson:gson:2.8.0'
+
+    // 可缩放photoView
+    compile 'com.github.chrisbanes:PhotoView:2.0.0'
+
+    // RecycleView刷新布局
+    compile 'com.lcodecorex:tkrefreshlayout:1.0.7'
+
+    // RecyclerView通用adapter
+    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.28'
+
+    // gif
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.9'
+
+//    compile 'com.github.bumptech.glide:glide:4.4.0'
+//    annotationProcessor 'com.github.bumptech.glide:compiler:4.4.0'
+
+}
